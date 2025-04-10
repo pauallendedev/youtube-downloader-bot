@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Descargador de YouTube</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 h-screen flex items-center justify-center">
+    <div class="bg-white p-8 rounded shadow-md w-96">
+        <h1 class="text-2xl font-bold mb-4">Descargador de YouTube</h1>
+        <form method="post">
+            <div class="mb-4">
+                <label for="url" class="block text-sm font-medium text-gray-700">URL del Video</label>
+                <input type="text" id="url" name="url" required class="mt-1 p-2 w-full border rounded-md">
+            </div>
+            <div class="mb-4">
+                <label for="quality" class="block text-sm font-medium text-gray-700">Calidad</label>
+                <select id="quality" name="quality" class="mt-1 p-2 w-full border rounded-md">
+                    <option value="best">Mejor disponible</option>
+                    <option value="worst">Peor disponible</option>
+                    <option value="bestvideo">Mejor video</option>
+                    <option value="bestaudio">Mejor audio</option>
+                </select>
+            </div>
+            <button type="submit" class="bg-blue-500 text-white p-2 rounded-md w-full">Descargar</button>
+        </form>
+    </div>
+</body>
+</html>
