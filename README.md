@@ -4,7 +4,7 @@ Una aplicación web para descargar videos de YouTube en distintas calidades.
 
 ## Despliegue
 
-1. Clona este repositorio: git clone https://github.com/tu_usuario/youtube-downloader-bot.git
+1. Clona este repositorio: git clone https://github.com/pauallendedev/youtube-downloader-bot.git
 
 2. Instala las dependencias: pip install -r requirements.txt
 
