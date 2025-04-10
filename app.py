@@ -1,34 +1,56 @@
-from flask import Flask, request, render_template, redirect, url_for
+from flask import Flask, request, render_template, send_file, jsonify
 import yt_dlp
 import os
+import tempfile
 
 app = Flask(__name__)
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/')
 def index():
-    if request.method == 'POST':
-        video_url = request.form['url']
-        quality = request.form['quality']
-        return redirect(url_for('download', url=video_url, quality=quality))
     return render_template('index.html')
 
-@app.route('/download')
+@app.route('/formats', methods=['POST'])
+def get_formats():
+    url = request.json.get('url')
+    if not url:
+        return jsonify({'error': 'URL not provided'}), 400
+
+    try:
+        with yt_dlp.YoutubeDL({'quiet': True}) as ydl:
+            info = ydl.extract_info(url, download=False)
+            formats = info.get('formats', [])
+            filtered = [
+                {
+                    'format_id': f['format_id'],
+                    'ext': f['ext'],
+                    'resolution': f.get('resolution') or f.get('height', 'audio'),
+                    'note': f.get('format_note', '')
+                }
+                for f in formats if f.get('vcodec') != 'none' or f.get('acodec') != 'none'
+            ]
+            return jsonify({'formats': filtered})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/download', methods=['POST'])
 def download():
-    video_url = request.args.get('url')
-    quality = request.args.get('quality')
-    
-    ydl_opts = {
-        'format': quality,
-        'outtmpl': 'downloads/%(title)s.%(ext)s',
-        'noplaylist': True,
-        'quiet': False,
-    }
-    
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info_dict = ydl.extract_info(video_url, download=True)
-        file_path = ydl.prepare_filename(info_dict)
-    
-    return f"Descarga completada. Archivo guardado en: {file_path}"
+    url = request.form['url']
+    format_id = request.form['format']
+
+    try:
+        tmp_dir = tempfile.gettempdir()
+        ydl_opts = {
+            'format': format_id,
+            'outtmpl': os.path.join(tmp_dir, '%(title)s.%(ext)s'),
+            'quiet': True,
+        }
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=True)
+            filename = ydl.prepare_filename(info)
+
+        return send_file(filename, as_attachment=True)
+    except Exception as e:
+        return f"Error: {str(e)}", 500
 
 if __name__ == '__main__':
     app.run(debug=True)
